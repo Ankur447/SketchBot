@@ -17,8 +17,16 @@ function App() {
 		console.log();
 	};
 
-	const onClearCanvas = () => {
+	const onClearCanvas = async () => {
 		refCanvas.current.clearCanvas();
+		await serviceApi
+			.post('/command/home')
+			.then((response: any) => {
+				console.log(response.data);
+			})
+			.catch((error: any) => {
+				console.log(error.toJSON());
+			});
 	};
 
 	// const onResetCanvas = () => {};
@@ -41,7 +49,8 @@ function App() {
 			/>
 
 			<button onClick={onClearCanvas}>Clear Canvas</button>
-			<button onClick={onExportSVG}>Export SVG</button>
+			<button onClick={onExportSVG}>Reset Work Height</button>
+			<button onClick={onExportSVG}>Set Work Height</button>
 		</>
 	);
 }

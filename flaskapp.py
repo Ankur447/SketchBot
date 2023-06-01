@@ -79,8 +79,8 @@ def connect_arm():
 def disconnect_arm():
     global arm, port
     if arm is not None:
-        if arm.ser.is_open:
-            arm.go_home()
+        # if arm.ser.is_open:
+        #     arm.go_home()
         arm.close()
         arm = None
         return "Disconnected"
@@ -92,10 +92,12 @@ def plot_to_draw(data):
     global arm, port
     time.sleep(0.2)
     connect_arm()
-    for line in data:
-        arm._send_cmd(f'{line}\r')
-    disconnect_arm()
-    return True
+    if arm is not None:
+        for line in data:
+            arm._send_cmd(f'{line}\r')
+        disconnect_arm()
+    else:
+        return 'No DexArm connected.'
 
 
 def plot_gcode(response):
@@ -104,8 +106,7 @@ def plot_gcode(response):
             paths=response, plot_image=False, plot_file=True, gcode_path='output.gcode')
         plot_to_draw(data)
     except:
-        print("Something went wrong.")
-        return
+        return 'No DexArm connected.'
 
 
 ##########################################################################################

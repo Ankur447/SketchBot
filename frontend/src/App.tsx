@@ -1,12 +1,44 @@
 import { ReactSketchCanvas } from 'react-sketch-canvas';
-import { createRef, useState } from 'react';
+import { createRef, useState, useEffect } from 'react';
 import serviceApi from './service/axios.js';
 
 function App() {
 	const refCanvas = createRef<any>();
 	const [aggressiveMode, setAggresiveMode] = useState(true);
-	const [paths, setPaths] = useState([]);
 	const [eraserMode, setEraserMode] = useState(false);
+	const [paths, setPaths] = useState([]);
+	const [currentPosition, setCurrentPosition] = useState({ x: 0, y: 0, z: 0, e: 0 });
+
+	const getPosition = async () => {
+		await serviceApi
+			.get('/position')
+			.then((response: any) => {
+				setCurrentPosition({ ...response.data });
+				console.log(response);
+			})
+			.catch((error: any) => {
+				console.log(error.toJSON());
+			});
+	};
+
+	const sendPosition = async (currentPosition: any) => {
+		await serviceApi
+			.post('/move', currentPosition)
+			.then((response: any) => {
+				// setCurrentPosition({ ...response.data });
+				// console.log(response);
+			})
+			.catch((error: any) => {
+				console.log(error.toJSON());
+			});
+	};
+
+	const onChangePosition = (event: any) => {
+		const position = { ...currentPosition, [event.target.name]: parseInt(event.target.value) };
+		sendPosition(position);
+		console.log(currentPosition);
+		setCurrentPosition({ ...position });
+	};
 
 	const sendPath = async (paths: any) => {
 		console.log(paths);
@@ -25,11 +57,16 @@ function App() {
 			.post(`/command/${command}`)
 			.then((response: any) => {
 				console.log(response.data);
+				getPosition();
 			})
 			.catch((error: any) => {
 				console.log(error.toJSON());
 			});
 	};
+
+	useEffect(() => {
+		getPosition();
+	}, []);
 
 	// const onExportSVG = () => {
 	// 	refCanvas.current.exportSvg().then((data: any) => {
@@ -126,9 +163,9 @@ function App() {
 				<button onClick={setworkheight}>Set Touch Paper</button>
 				<button onClick={testworkheight}>Test Touch Paper</button>
 				<br></br>
-				x <input type="number" name="x" value={0} />
-				y <input type="number" name="y" value={0} />
-				z <input type="number" name="z" value={0} />
+				x <input type="number" name="x" value={currentPosition.x} onChange={onChangePosition} step={1} />
+				y <input type="number" name="y" value={currentPosition.y} onChange={onChangePosition} step={1} />
+				z <input type="number" name="z" value={currentPosition.z} onChange={onChangePosition} step={1} />
 			</div>
 
 			<ReactSketchCanvas

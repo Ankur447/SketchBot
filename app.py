@@ -1,934 +1,173 @@
-import os
-import sys; sys.path.append(os.getcwd())
+
+##########################################################################################
+##########################################################################################
+# DexArm Drawing Application
+# SVG / SVG Path to Gcode
+# Author : Varun Gujjar / Ronin Labs
+##########################################################################################
+##########################################################################################
+
+# from env import *
+import logging
+from flask import Flask, request
+from flask_cors import CORS
+from threading import Thread
+import requests
 from lib import SVG_GCode
+from lib.pydexarm import Dexarm
+from lib.logger import formatLogger
+import time
 
-if __name__ == '__main__':
-    svg_gcode = SVG_GCode(precision=10,
-                          z_feedrate=5000, 
-                          x_offset=-115, 
-                          y_offset=230, 
-                          z_surface_touch = 0, 
-                		  z_up_offset=5, 
-                          bed_size_x=230, 
-                          bed_size_y=150, 
-                          longest_edge=230,
-                          canvas_width=1024,
-                          canvas_height=668,
-                          verbose=True,             
-                          fit_canvas=False)
-                          
-    # svg_gcode.svg_to_gcode(svg_path='Hu3aQf01.svg', gcode_path='input.gcode', plot_image=True,plot_file=True, plot_arm=False)
+from rq import Queue
+from rq.job import Job
+from worker import conn
+q = Queue(connection=conn)
 
-    json_data =[
-  {
-    "drawMode": True,
-    "strokeColor": "#000000",
-    "strokeWidth": 4,
-    "paths": [
-      {
-        "x": 698,
-        "y": 135
-      },
-      {
-        "x": 697,
-        "y": 135
-      },
-      {
-        "x": 697,
-        "y": 135
-      },
-      {
-        "x": 696,
-        "y": 135
-      },
-      {
-        "x": 695,
-        "y": 135
-      },
-      {
-        "x": 694,
-        "y": 135
-      },
-      {
-        "x": 693,
-        "y": 135
-      },
-      {
-        "x": 693,
-        "y": 136
-      },
-      {
-        "x": 692,
-        "y": 137
-      },
-      {
-        "x": 691,
-        "y": 138
-      },
-      {
-        "x": 690,
-        "y": 140
-      },
-      {
-        "x": 688,
-        "y": 143
-      },
-      {
-        "x": 687,
-        "y": 146
-      },
-      {
-        "x": 686,
-        "y": 148
-      },
-      {
-        "x": 685,
-        "y": 150
-      },
-      {
-        "x": 685,
-        "y": 152
-      },
-      {
-        "x": 684,
-        "y": 153
-      },
-      {
-        "x": 684,
-        "y": 155
-      },
-      {
-        "x": 684,
-        "y": 156
-      },
-      {
-        "x": 684,
-        "y": 158
-      },
-      {
-        "x": 684,
-        "y": 160
-      },
-      {
-        "x": 684,
-        "y": 161
-      },
-      {
-        "x": 684,
-        "y": 163
-      },
-      {
-        "x": 684,
-        "y": 164
-      },
-      {
-        "x": 685,
-        "y": 166
-      },
-      {
-        "x": 686,
-        "y": 168
-      },
-      {
-        "x": 687,
-        "y": 170
-      },
-      {
-        "x": 688,
-        "y": 171
-      },
-      {
-        "x": 690,
-        "y": 173
-      },
-      {
-        "x": 692,
-        "y": 174
-      },
-      {
-        "x": 694,
-        "y": 176
-      },
-      {
-        "x": 697,
-        "y": 178
-      },
-      {
-        "x": 700,
-        "y": 180
-      },
-      {
-        "x": 703,
-        "y": 181
-      },
-      {
-        "x": 707,
-        "y": 182
-      },
-      {
-        "x": 710,
-        "y": 183
-      },
-      {
-        "x": 713,
-        "y": 184
-      },
-      {
-        "x": 717,
-        "y": 184
-      },
-      {
-        "x": 720,
-        "y": 184
-      },
-      {
-        "x": 723,
-        "y": 184
-      },
-      {
-        "x": 725,
-        "y": 184
-      },
-      {
-        "x": 727,
-        "y": 183
-      },
-      {
-        "x": 730,
-        "y": 182
-      },
-      {
-        "x": 732,
-        "y": 179
-      },
-      {
-        "x": 734,
-        "y": 177
-      },
-      {
-        "x": 736,
-        "y": 174
-      },
-      {
-        "x": 738,
-        "y": 171
-      },
-      {
-        "x": 739,
-        "y": 169
-      },
-      {
-        "x": 740,
-        "y": 167
-      },
-      {
-        "x": 740,
-        "y": 167
-      },
-      {
-        "x": 740,
-        "y": 166
-      },
-      {
-        "x": 740,
-        "y": 165
-      },
-      {
-        "x": 740,
-        "y": 163
-      },
-      {
-        "x": 739,
-        "y": 159
-      },
-      {
-        "x": 738,
-        "y": 154
-      },
-      {
-        "x": 736,
-        "y": 150
-      },
-      {
-        "x": 734,
-        "y": 146
-      },
-      {
-        "x": 732,
-        "y": 142
-      },
-      {
-        "x": 730,
-        "y": 139
-      },
-      {
-        "x": 727,
-        "y": 137
-      },
-      {
-        "x": 725,
-        "y": 135
-      },
-      {
-        "x": 722,
-        "y": 134
-      },
-      {
-        "x": 720,
-        "y": 132
-      },
-      {
-        "x": 717,
-        "y": 131
-      },
-      {
-        "x": 715,
-        "y": 130
-      },
-      {
-        "x": 712,
-        "y": 130
-      },
-      {
-        "x": 709,
-        "y": 129
-      },
-      {
-        "x": 707,
-        "y": 128
-      },
-      {
-        "x": 705,
-        "y": 128
-      },
-      {
-        "x": 703,
-        "y": 128
-      },
-      {
-        "x": 702,
-        "y": 128
-      },
-      {
-        "x": 701,
-        "y": 128
-      },
-      {
-        "x": 701,
-        "y": 128
-      },
-      {
-        "x": 700,
-        "y": 128
-      },
-      {
-        "x": 700,
-        "y": 128
-      },
-      {
-        "x": 700,
-        "y": 129
-      },
-      {
-        "x": 698,
-        "y": 130
-      },
-      {
-        "x": 697,
-        "y": 131
-      },
-      {
-        "x": 695,
-        "y": 133
-      },
-      {
-        "x": 694,
-        "y": 134
-      },
-      {
-        "x": 693,
-        "y": 134
-      },
-      {
-        "x": 693,
-        "y": 134
-      },
-      {
-        "x": 693,
-        "y": 134
-      },
-      {
-        "x": 693,
-        "y": 134
-      }
-    ],
-    "startTimestamp": 1685468451088,
-    "endTimestamp": 1685468452773
-  },
-  {
-    "drawMode": True,
-    "strokeColor": "#000000",
-    "strokeWidth": 4,
-    "paths": [
-      {
-        "x": 683,
-        "y": 188
-      },
-      {
-        "x": 683,
-        "y": 188
-      },
-      {
-        "x": 684,
-        "y": 188
-      },
-      {
-        "x": 685,
-        "y": 188
-      },
-      {
-        "x": 687,
-        "y": 189
-      },
-      {
-        "x": 689,
-        "y": 190
-      },
-      {
-        "x": 691,
-        "y": 191
-      },
-      {
-        "x": 694,
-        "y": 192
-      },
-      {
-        "x": 697,
-        "y": 193
-      },
-      {
-        "x": 700,
-        "y": 195
-      },
-      {
-        "x": 703,
-        "y": 197
-      },
-      {
-        "x": 706,
-        "y": 198
-      },
-      {
-        "x": 709,
-        "y": 199
-      },
-      {
-        "x": 712,
-        "y": 200
-      },
-      {
-        "x": 715,
-        "y": 201
-      },
-      {
-        "x": 717,
-        "y": 201
-      },
-      {
-        "x": 720,
-        "y": 202
-      },
-      {
-        "x": 722,
-        "y": 202
-      },
-      {
-        "x": 725,
-        "y": 202
-      },
-      {
-        "x": 727,
-        "y": 202
-      },
-      {
-        "x": 730,
-        "y": 202
-      },
-      {
-        "x": 732,
-        "y": 202
-      },
-      {
-        "x": 733,
-        "y": 202
-      },
-      {
-        "x": 735,
-        "y": 202
-      },
-      {
-        "x": 735,
-        "y": 202
-      },
-      {
-        "x": 736,
-        "y": 202
-      },
-      {
-        "x": 738,
-        "y": 201
-      },
-      {
-        "x": 740,
-        "y": 199
-      },
-      {
-        "x": 742,
-        "y": 197
-      },
-      {
-        "x": 745,
-        "y": 194
-      },
-      {
-        "x": 748,
-        "y": 192
-      },
-      {
-        "x": 750,
-        "y": 190
-      },
-      {
-        "x": 752,
-        "y": 188
-      },
-      {
-        "x": 753,
-        "y": 187
-      },
-      {
-        "x": 753,
-        "y": 186
-      },
-      {
-        "x": 753,
-        "y": 186
-      },
-      {
-        "x": 753,
-        "y": 185
-      },
-      {
-        "x": 753,
-        "y": 185
-      },
-      {
-        "x": 753,
-        "y": 185
-      },
-      {
-        "x": 753,
-        "y": 185
-      },
-      {
-        "x": 753,
-        "y": 185
-      },
-      {
-        "x": 753,
-        "y": 185
-      },
-      {
-        "x": 753,
-        "y": 185
-      },
-      {
-        "x": 753,
-        "y": 185
-      }
-    ],
-    "startTimestamp": 1685468455070,
-    "endTimestamp": 1685468456021
-  },
-  {
-    "drawMode": True,
-    "strokeColor": "#000000",
-    "strokeWidth": 4,
-    "paths": [
-      {
-        "x": 670,
-        "y": 126
-      },
-      {
-        "x": 670,
-        "y": 126
-      },
-      {
-        "x": 670,
-        "y": 125
-      },
-      {
-        "x": 670,
-        "y": 124
-      },
-      {
-        "x": 670,
-        "y": 122
-      },
-      {
-        "x": 671,
-        "y": 121
-      },
-      {
-        "x": 672,
-        "y": 119
-      },
-      {
-        "x": 674,
-        "y": 117
-      },
-      {
-        "x": 676,
-        "y": 116
-      },
-      {
-        "x": 679,
-        "y": 114
-      },
-      {
-        "x": 682,
-        "y": 113
-      },
-      {
-        "x": 685,
-        "y": 111
-      },
-      {
-        "x": 689,
-        "y": 110
-      },
-      {
-        "x": 692,
-        "y": 109
-      },
-      {
-        "x": 696,
-        "y": 108
-      },
-      {
-        "x": 700,
-        "y": 107
-      },
-      {
-        "x": 703,
-        "y": 106
-      },
-      {
-        "x": 706,
-        "y": 106
-      },
-      {
-        "x": 710,
-        "y": 106
-      },
-      {
-        "x": 713,
-        "y": 105
-      },
-      {
-        "x": 717,
-        "y": 105
-      },
-      {
-        "x": 720,
-        "y": 105
-      },
-      {
-        "x": 723,
-        "y": 104
-      },
-      {
-        "x": 725,
-        "y": 104
-      },
-      {
-        "x": 728,
-        "y": 104
-      },
-      {
-        "x": 730,
-        "y": 104
-      },
-      {
-        "x": 732,
-        "y": 105
-      },
-      {
-        "x": 734,
-        "y": 105
-      },
-      {
-        "x": 736,
-        "y": 106
-      },
-      {
-        "x": 738,
-        "y": 106
-      },
-      {
-        "x": 740,
-        "y": 107
-      },
-      {
-        "x": 742,
-        "y": 108
-      },
-      {
-        "x": 743,
-        "y": 109
-      },
-      {
-        "x": 744,
-        "y": 110
-      },
-      {
-        "x": 745,
-        "y": 111
-      },
-      {
-        "x": 746,
-        "y": 112
-      },
-      {
-        "x": 746,
-        "y": 113
-      },
-      {
-        "x": 747,
-        "y": 113
-      },
-      {
-        "x": 747,
-        "y": 114
-      },
-      {
-        "x": 747,
-        "y": 114
-      },
-      {
-        "x": 747,
-        "y": 114
-      },
-      {
-        "x": 747,
-        "y": 114
-      }
-    ],
-    "startTimestamp": 1685468456955,
-    "endTimestamp": 1685468457852
-  },
-  {
-    "drawMode": True,
-    "strokeColor": "#000000",
-    "strokeWidth": 4,
-    "paths": [
-      {
-        "x": 755,
-        "y": 129
-      },
-      {
-        "x": 755,
-        "y": 129
-      },
-      {
-        "x": 755,
-        "y": 129
-      },
-      {
-        "x": 755,
-        "y": 131
-      },
-      {
-        "x": 755,
-        "y": 132
-      },
-      {
-        "x": 755,
-        "y": 135
-      },
-      {
-        "x": 755,
-        "y": 138
-      },
-      {
-        "x": 755,
-        "y": 142
-      },
-      {
-        "x": 756,
-        "y": 145
-      },
-      {
-        "x": 757,
-        "y": 149
-      },
-      {
-        "x": 757,
-        "y": 153
-      },
-      {
-        "x": 757,
-        "y": 157
-      },
-      {
-        "x": 758,
-        "y": 160
-      },
-      {
-        "x": 758,
-        "y": 163
-      },
-      {
-        "x": 758,
-        "y": 166
-      },
-      {
-        "x": 758,
-        "y": 167
-      },
-      {
-        "x": 758,
-        "y": 168
-      },
-      {
-        "x": 758,
-        "y": 169
-      },
-      {
-        "x": 758,
-        "y": 169
-      },
-      {
-        "x": 758,
-        "y": 169
-      },
-      {
-        "x": 758,
-        "y": 169
-      }
-    ],
-    "startTimestamp": 1685468459204,
-    "endTimestamp": 1685468459810
-  },
-  {
-    "drawMode": True,
-    "strokeColor": "#000000",
-    "strokeWidth": 4,
-    "paths": [
-      {
-        "x": 660,
-        "y": 140
-      },
-      {
-        "x": 660,
-        "y": 140
-      },
-      {
-        "x": 660,
-        "y": 141
-      },
-      {
-        "x": 660,
-        "y": 142
-      },
-      {
-        "x": 660,
-        "y": 144
-      },
-      {
-        "x": 660,
-        "y": 145
-      },
-      {
-        "x": 660,
-        "y": 147
-      },
-      {
-        "x": 660,
-        "y": 149
-      },
-      {
-        "x": 660,
-        "y": 151
-      },
-      {
-        "x": 660,
-        "y": 153
-      },
-      {
-        "x": 660,
-        "y": 155
-      },
-      {
-        "x": 660,
-        "y": 157
-      },
-      {
-        "x": 660,
-        "y": 159
-      },
-      {
-        "x": 661,
-        "y": 160
-      },
-      {
-        "x": 661,
-        "y": 161
-      },
-      {
-        "x": 662,
-        "y": 163
-      },
-      {
-        "x": 663,
-        "y": 164
-      },
-      {
-        "x": 664,
-        "y": 165
-      },
-      {
-        "x": 665,
-        "y": 167
-      },
-      {
-        "x": 666,
-        "y": 168
-      },
-      {
-        "x": 667,
-        "y": 170
-      },
-      {
-        "x": 667,
-        "y": 171
-      },
-      {
-        "x": 668,
-        "y": 172
-      },
-      {
-        "x": 668,
-        "y": 172
-      },
-      {
-        "x": 669,
-        "y": 173
-      }
-    ],
-    "startTimestamp": 1685468460718,
-    "endTimestamp": 1685468461322
-  }
-]
-    svg_gcode.path_to_gcode(paths=json_data, gcode_path='output.gcode', plot_image=True,plot_file=False, plot_arm=False)
 
+app = Flask(__name__)
+logger = formatLogger(__name__)
+
+CORS(app)
+# cors = CORS(app, resource={
+#     r"/*":{
+#         "origins":"*"
+#     }
+# })
+
+##########################################################################################
+# API Server Configuration
+##########################################################################################
+
+host = '0.0.0.0'
+port = 8251
+debug = False
+
+##########################################################################################
+# Dex Arm Configuration
+##########################################################################################
+
+arm = None
+serial_port = "/dev/tty.usbmodem305A366030311"
+svg_gcode = SVG_GCode(
+    precision=10,
+    z_feedrate=3000,
+    x_offset=-115,
+    y_offset=230,
+    z_surface_touch=0,
+    z_up_offset=5,
+    bed_size_x=230,
+    bed_size_y=150,
+    longest_edge=230,
+    canvas_width=1024,
+    canvas_height=668,
+    verbose=True,
+    fit_canvas=False)
+
+
+##########################################################################################
+##########################################################################################
+
+def connect_arm():
+    global arm
+    try:
+        arm = Dexarm(port=serial_port)
+        x, y, z, e, a, b, c = arm.get_current_position()
+        message = "DexArm connected x: {}, y: {}, z: {}, e: {}\na: {}, b: {}, c: {}".format(
+            x, y, z, e, a, b, c)
+        print(message)
+        return message
+    except:
+        return False
+
+
+def disconnect_arm():
+    global arm
+    if arm is not None:
+        # if arm.ser.is_open:
+        #     arm.go_home()
+        arm.close()
+        arm = None
+        return "Disconnected"
+    else:
+        return "No DexArm connected."
+
+
+def plot_gcode(response):
+    global arm
+    connect_arm()
+    if arm is not None:
+        try:
+            data = svg_gcode.path_to_gcode(
+                paths=response, plot_image=False, plot_file=True, gcode_path='output.gcode')
+            time.sleep(0.2)
+            for line in data:
+                arm._send_cmd(f'{line}\r')
+            # disconnect_arm()
+        except:
+            logging.error(f'Something went wrong while processing.')
+    else:
+        logging.error("No DexArm connected.")
+
+##########################################################################################
+# API Routes
+##########################################################################################
+
+
+@app.route('/')
+def index():
+    return "Server is running."
+
+
+@app.route('/move', methods=['POST'])
+def move():
+    response = request.get_json()
+    global arm
+    connect_arm()
+    if arm is not None:
+        arm.move_to(x=response['x'], y=response['y'], z=response['z'])
+        x, y, z, e, a, b, c = arm.get_current_position()
+        position = {'x': x, 'y': y, 'z': z, 'e': e}
+        logger.info(f'Sent Position {position}')
+        return position
+    else:
+        logger.error(f'No DexArm connected.')
+        return 'No DexArm connected.'
+
+
+@app.route('/command/<string:command>', methods=['POST'])
+def command(command):
+    connect_arm()
+    global arm
+    cmd = None
+    if arm is not None:
+        match command:
+            case "home":
+                cmd = 'M1112'
+            case "reset":
+                cmd = 'G92.1'
+            case "stop":
+                cmd = 'G4'
+            case "setworkheight":
+                cmd = 'G92 X0 Y300 Z0 E0'
+        arm._send_cmd(f'{cmd}\r')
+        logger.info(f'Sent Command : {cmd}')
+        disconnect_arm()
+        return '200 OK HTTPS.'
+    else:
+        logger.error(f'No DexArm connected.')
+        return 'No DexArm connected.'
+
+
+@app.route('/draw', methods=['POST'])
+def draw():
+    response = request.get_json()
+    from flaskapp import plot_gcode
+    if len(response[0]['paths']) > 1:
+        job = q.enqueue(plot_gcode, response, result_ttl=2)
+        logger.info(f'{response}')
+        logger.info(f'Started job with ID {job.get_id()}')
+    return '200 OK HTTPS.'
+
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)

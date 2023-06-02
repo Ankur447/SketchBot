@@ -1,6 +1,7 @@
 .env
 node_modules
-
+.vscode/
+.github/
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/

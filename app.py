@@ -161,7 +161,7 @@ def command(command):
 @app.route('/draw', methods=['POST'])
 def draw():
     response = request.get_json()
-    from flaskapp import plot_gcode
+    from app import plot_gcode
     if len(response[0]['paths']) > 1:
         job = q.enqueue(plot_gcode, response, result_ttl=2)
         logger.info(f'{response}')

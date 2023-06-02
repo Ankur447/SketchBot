@@ -47,7 +47,8 @@ debug = False
 ##########################################################################################
 
 arm = None
-serial_port = "/dev/tty.usbmodem305A366030311"
+# serial_port = "/dev/tty.usbmodem305A366030311"
+serial_port = "/dev/ttyACM0"
 svg_gcode = SVG_GCode(
     precision=10,
     z_feedrate=3000,

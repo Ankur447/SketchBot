@@ -4,7 +4,7 @@ import axios from 'axios';
 /* Default Axios configuration */
 /*******************************/
 let serviceApi = axios.create({
-	baseURL: 'http://192.168.1.107:5000',
+	baseURL: 'http://oneplusarm.local:5000',
 	headers: {
 		'Content-Type': 'application/json',
 		'Access-Control-Allow-Origin': '*',

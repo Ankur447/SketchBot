@@ -140,15 +140,14 @@ def command(command):
     global arm
     cmd = None
     if arm is not None:
-        match command:
-            case "home":
-                cmd = 'M1112'
-            case "reset":
-                cmd = 'G92.1'
-            case "stop":
-                cmd = 'G4'
-            case "setworkheight":
-                cmd = 'G92 X0 Y300 Z0 E0'
+        if command == "home":
+            cmd = 'M1112'
+        elif command == "reset":    
+            cmd = 'G92.1'
+        elif command == "stop":      
+            cmd = 'G4'
+        elif command == "setworkheight":      
+            cmd = 'G92 X0 Y300 Z0 E0'
         arm._send_cmd(f'{cmd}\r')
         logger.info(f'Sent Command : {cmd}')
         disconnect_arm()

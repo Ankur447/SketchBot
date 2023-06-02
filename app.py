@@ -119,6 +119,20 @@ def index():
     return "Server is running."
 
 
+@app.route('/position', methods=['GET'])
+def position():
+    global arm
+    connect_arm()
+    if arm is not None:
+        x, y, z, e, a, b, c = arm.get_current_position()
+        position = {'x': x, 'y': y, 'z': z, 'e': e}
+        logger.info(f'Sent Position {position}')
+        return position
+    else:
+        logger.error(f'No DexArm connected.')
+        return 'No DexArm connected.'
+
+
 @app.route('/move', methods=['POST'])
 def move():
     response = request.get_json()
@@ -143,11 +157,11 @@ def command(command):
     if arm is not None:
         if command == "home":
             cmd = 'M1112'
-        elif command == "reset":    
+        elif command == "reset":
             cmd = 'G92.1'
-        elif command == "stop":      
+        elif command == "stop":
             cmd = 'G4'
-        elif command == "setworkheight":      
+        elif command == "setworkheight":
             cmd = 'G92 X0 Y300 Z0 E0'
         arm._send_cmd(f'{cmd}\r')
         logger.info(f'Sent Command : {cmd}')

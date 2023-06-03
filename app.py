@@ -9,8 +9,9 @@
 
 # from env import *
 import logging
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS
+import os
 from threading import Thread
 import requests
 from lib import SVG_GCode
@@ -24,7 +25,7 @@ from worker import conn
 q = Queue(connection=conn)
 
 
-app = Flask(__name__)
+app = Flask(__name__,static_folder='frontend/dist')
 logger = formatLogger(__name__)
 
 CORS(app)
@@ -114,9 +115,19 @@ def plot_gcode(response):
 ##########################################################################################
 
 
-@app.route('/')
-def index():
-    return "Server is running."
+# @app.route('/')
+# def index():
+#     return "Server is running."
+
+
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 
 @app.route('/position', methods=['GET'])
@@ -125,7 +136,7 @@ def position():
     connect_arm()
     if arm is not None:
         x, y, z, e, a, b, c = arm.get_current_position()
-        position = {'x': int(x), 'y': int(y), 'z': int(z), 'e': int(z)}
+        position = {'x': int(x), 'y':int(y), 'z': int(z), 'e':int(z)}
         logger.info(f'Sent Position {position}')
         disconnect_arm()
         return position
@@ -142,7 +153,7 @@ def move():
     if arm is not None:
         arm.move_to(x=response['x'], y=response['y'], z=response['z'])
         x, y, z, e, a, b, c = arm.get_current_position()
-        position = {'x': int(x), 'y': int(y), 'z': int(z), 'e': int(z)}
+        position = {'x': int(x), 'y':int(y), 'z': int(z), 'e':int(z)}
         logger.info(f'Sent Position {position}')
         disconnect_arm()
         return position
@@ -159,14 +170,14 @@ def command(command):
     if arm is not None:
         if command == "home":
             cmd = 'M1112'
-        elif command == "reset":
+        elif command == "reset":    
             cmd = 'G92.1'
-        elif command == "stop":
+        elif command == "stop":      
             cmd = 'G4'
-        elif command == "setworkheight":
+        elif command == "setworkheight":      
             cmd = 'G92 X0 Y300 Z0 E0'
         elif command == "testworkheight":
-            arm.move_to(x=0, y=300, z=0)
+            arm.move_to(x=0, y=300, z=0)      
         arm._send_cmd(f'{cmd}\r')
         logger.info(f'Sent Command : {cmd}')
         disconnect_arm()

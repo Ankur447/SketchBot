@@ -3,7 +3,7 @@ import axios from 'axios';
 /*******************************/
 /* Default Axios configuration */
 /*******************************/
-let serviceApi = axios.create({
+const api = axios.create({
 	baseURL: 'http://oneplusarm.local:5000',
 	headers: {
 		'Content-Type': 'application/json',
@@ -25,5 +25,4 @@ reserved for future */
 // 		throw error;
 // 	}
 // );
-
-export default serviceApi;
+export default api;

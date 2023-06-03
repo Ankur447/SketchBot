@@ -1,7 +1,18 @@
 import { ReactSketchCanvas } from 'react-sketch-canvas';
 import { createRef, useState, useEffect } from 'react';
 import Modal from 'react-modal';
-import serviceApi from './service/axios.js';
+import axios from 'axios';
+
+const api = axios.create({
+	baseURL: 'http://oneplusarm.local:5000',
+	headers: {
+		'Content-Type': 'application/json',
+		'Access-Control-Allow-Origin': '*',
+		'Access-Control-Allow-Credentials': true,
+		'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
+	},
+	params: {},
+});
 
 Modal.setAppElement('#root');
 
@@ -29,7 +40,7 @@ function App() {
 	};
 
 	const getPosition = async () => {
-		await serviceApi
+		await api
 			.get('/position')
 			.then((response: any) => {
 				setCurrentPosition({ ...response.data });
@@ -41,11 +52,11 @@ function App() {
 	};
 
 	const sendPosition = async (currentPosition: any) => {
-		await serviceApi
+		await api
 			.post('/move', currentPosition)
 			.then((response: any) => {
 				// setCurrentPosition({ ...response.data });
-				// console.log(response);
+				console.log(response);
 			})
 			.catch((error: any) => {
 				console.log(error.toJSON());
@@ -61,7 +72,7 @@ function App() {
 
 	const sendPath = async (paths: any) => {
 		console.log(paths);
-		await serviceApi
+		await api
 			.post('/draw', paths)
 			.then((response: any) => {
 				console.log(response.data);
@@ -72,7 +83,7 @@ function App() {
 	};
 
 	const sendCommand = async (command: String) => {
-		await serviceApi
+		await api
 			.post(`/command/${command}`)
 			.then((response: any) => {
 				console.log(response.data);

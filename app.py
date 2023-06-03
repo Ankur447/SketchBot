@@ -99,7 +99,7 @@ def plot_gcode(response):
     if arm is not None:
         try:
             data = svg_gcode.path_to_gcode(
-                paths=response, plot_image=False, plot_file=True, gcode_path='output.gcode')
+                paths=response, plot_image=False, plot_file=False, gcode_path='output.gcode')
             time.sleep(0.2)
             for line in data:
                 arm._send_cmd(f'{line}\r')
@@ -125,8 +125,9 @@ def position():
     connect_arm()
     if arm is not None:
         x, y, z, e, a, b, c = arm.get_current_position()
-        position = {'x': x, 'y': y, 'z': z, 'e': e}
+        position = {'x': int(x), 'y': int(y), 'z': int(z), 'e': int(z)}
         logger.info(f'Sent Position {position}')
+        disconnect_arm()
         return position
     else:
         logger.error(f'No DexArm connected.')
@@ -141,8 +142,9 @@ def move():
     if arm is not None:
         arm.move_to(x=response['x'], y=response['y'], z=response['z'])
         x, y, z, e, a, b, c = arm.get_current_position()
-        position = {'x': x, 'y': y, 'z': z, 'e': e}
+        position = {'x': int(x), 'y': int(y), 'z': int(z), 'e': int(z)}
         logger.info(f'Sent Position {position}')
+        disconnect_arm()
         return position
     else:
         logger.error(f'No DexArm connected.')
@@ -163,6 +165,8 @@ def command(command):
             cmd = 'G4'
         elif command == "setworkheight":
             cmd = 'G92 X0 Y300 Z0 E0'
+        elif command == "testworkheight":
+            arm.move_to(x=0, y=300, z=0)
         arm._send_cmd(f'{cmd}\r')
         logger.info(f'Sent Command : {cmd}')
         disconnect_arm()

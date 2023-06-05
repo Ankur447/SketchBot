@@ -11,6 +11,15 @@
 	-moz-osx-font-smoothing: grayscale;
 	-webkit-text-size-adjust: 100%;
 }
+
+html,
+body,
+.container,
+#root {
+	height: 100%;
+	overflow: hidden;
+}
+
 .canvas,
 svg {
 	/* height: 100%; */
@@ -18,13 +27,13 @@ svg {
 }
 
 .canvas {
-	width: 1024px;
 	border: 1px solid #efefef !important;
+	margin: 20px;
 }
 
-/* #root {
-	width: 1024px;
-} */
+#root {
+	width: 100%;
+}
 
 a {
 	font-weight: 500;
@@ -36,7 +45,6 @@ a:hover {
 }
 
 body {
-	margin: 10px;
 	display: flex;
 	place-items: center;
 }
@@ -191,4 +199,7 @@ input[type='number'] {
 }
 .disabled:hover {
 	color: #333 !important;
+}
+image {
+	opacity: 0.2 !important;
 }

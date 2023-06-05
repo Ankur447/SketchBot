@@ -25,6 +25,10 @@ function App() {
 	>([]);
 	const [currentPosition, setCurrentPosition] = useState({ x: 0, y: 0, z: 0, e: 0 });
 	const [modalIsOpen, setIsOpen] = useState(false);
+	const [shuffleImage, setShuffleImage] = useState(
+		// 'https://upload.wikimedia.org/wikipedia/commons/7/70/Graph_paper_scan_1600x1000_%286509259561%29.jpg'
+		'img1.jpeg'
+	);
 
 	const customStyles = {
 		content: {
@@ -186,9 +190,9 @@ function App() {
 				<li onClick={scribble}>
 					<i className="fa-regular fa-scribble"></i>
 				</li>
-				<li onClick={eraser} className={aggressiveMode ? 'disabled' : ''}>
+				{/* <li onClick={eraser} className={aggressiveMode ? 'disabled' : ''}>
 					<i className="fa-regular fa-eraser"></i>
-				</li>
+				</li> */}
 
 				<li onClick={traceImage}>
 					<i className="fa-regular fa-images"></i>
@@ -255,11 +259,14 @@ function App() {
 			</Modal>
 
 			<ReactSketchCanvas
-				width="1024"
+				width="1024px"
+				height="661px"
 				strokeWidth={4}
 				strokeColor="black"
 				className="canvas"
 				eraserWidth={10}
+				backgroundImage={shuffleImage}
+				preserveBackgroundImageAspectRatio="none"
 				onStroke={onStroke}
 				onChange={onChange}
 				ref={refCanvas}

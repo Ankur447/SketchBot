@@ -29,7 +29,6 @@ function App() {
 	const [currentPosition, setCurrentPosition] = useState({ x: 0, y: 0, z: 0, e: 0 });
 	const [modalIsOpen, setIsOpen] = useState(false);
 	const [confirmIsOpen, setConfirmIsOpen] = useState(false);
-
 	const [backgroundImage, setBackgroundImage] = useState();
 
 	const customStyles = {
@@ -57,6 +56,54 @@ function App() {
 			border: 'None',
 			maxWidth: '400px',
 		},
+	};
+
+	// const scribble = () => {
+	// 	refCanvas.current.eraseMode(false);
+	// 	setEraserMode(false);
+	// };
+
+	// const eraser = () => {
+	// 	if (aggressiveMode) {
+	// 		refCanvas.current.eraseMode(false);
+	// 		setEraserMode(false);
+	// 	} else {
+	// 		refCanvas.current.eraseMode(true);
+	// 		setEraserMode(true);
+	// 	}
+	// };
+
+	const traceImage = () => {
+		refCanvas.current.eraseMode(false);
+		setEraserMode(false);
+	};
+
+	const clearCanvas = () => {
+		refCanvas.current.resetCanvas();
+		sendCommand('home');
+		setPaths([]);
+	};
+
+	const sendHome = () => {
+		sendCommand('home');
+	};
+
+	const sendReset = () => {
+		sendCommand('reset');
+	};
+
+	const setworkheight = () => {
+		sendCommand('setworkheight');
+	};
+
+	const testworkheight = () => {
+		sendCommand('testworkheight');
+	};
+
+	const sendDrawing = () => {
+		if (!aggressiveMode) {
+			sendPath(paths);
+		}
 	};
 
 	const getPosition = async () => {
@@ -117,94 +164,59 @@ function App() {
 			});
 	};
 
-	const getImageFile = async () => {
-		clearCanvas();
-		await api
-			.get('/get_image')
-			.then((response: any) => {
-				if (response.data.type == 'success') {
-					showToast('success', response.data.message);
-					setBackgroundImage(response.data.message);
-				} else {
-					showToast(response.data.type, response.data.message);
-				}
-				console.log(response);
-			})
-			.catch((error: any) => {
-				showToast('error', error.toJSON().message);
-			});
-	};
-
-	const saveDrawing = async () => {
-		refCanvas.current.exportSvg().then((response: any) => {
-			console.log(response);
-		});
-
-		if (backgroundImage) {
+	const getImageFile = () => {
+		const callImage = async () => {
 			await api
-				.post(`/move_image/${backgroundImage}`)
+				.get('/get_image')
 				.then((response: any) => {
-					showToast(response.data.type, response.data.message);
-					getImageFile();
+					if (response.data.type == 'success') {
+						showToast('success', response.data.message);
+						setBackgroundImage(response.data.message);
+					} else {
+						showToast(response.data.type, response.data.message);
+						setBackgroundImage(undefined);
+					}
+					console.log(response);
 				})
 				.catch((error: any) => {
 					showToast('error', error.toJSON().message);
 				});
+		};
+
+		if (refCanvas.current) {
+			clearCanvas();
+		}
+		callImage();
+	};
+
+	const saveDrawing = () => {
+		if (backgroundImage) {
+			refCanvas.current.exportSvg().then((svgfile: any) => {
+				setConfirmIsOpen(false);
+				api
+					.post(`/save_image`, { filename: backgroundImage, svg: svgfile })
+					.then((response: any) => {
+						if (response.data.type == 'success') {
+							showToast('success', response.data.message);
+							getImageFile();
+							console.log(refCanvas);
+						} else {
+							showToast(response.data.type, response.data.message);
+							setBackgroundImage(undefined);
+						}
+					})
+					.catch((error: any) => {
+						showToast('error', error.toJSON().message);
+					});
+
+				console.log(svgfile);
+			});
 		}
 	};
 
 	useEffect(() => {
-		getPosition();
 		getImageFile();
-	}, []);
-
-	// const scribble = () => {
-	// 	refCanvas.current.eraseMode(false);
-	// 	setEraserMode(false);
-	// };
-
-	// const eraser = () => {
-	// 	if (aggressiveMode) {
-	// 		refCanvas.current.eraseMode(false);
-	// 		setEraserMode(false);
-	// 	} else {
-	// 		refCanvas.current.eraseMode(true);
-	// 		setEraserMode(true);
-	// 	}
-	// };
-
-	const traceImage = () => {
-		refCanvas.current.eraseMode(false);
-		setEraserMode(false);
-	};
-
-	const clearCanvas = () => {
-		refCanvas.current.clearCanvas();
-		sendCommand('home');
-		setPaths([]);
-	};
-
-	const sendHome = () => {
-		sendCommand('home');
-	};
-
-	const sendReset = () => {
-		sendCommand('reset');
-	};
-
-	const setworkheight = () => {
-		sendCommand('setworkheight');
-	};
-
-	const testworkheight = () => {
-		sendCommand('testworkheight');
-	};
-
-	const sendDrawing = () => {
-		if (!aggressiveMode) {
-			sendPath(paths);
-		}
-	};
+	}, [backgroundImage]);
 
 	const onChange = (paths: Array<{ drawMode: Boolean; paths: any; strokeColor: String; strokeWidth: Number }>) => {
 		let new_paths: Array<{ drawMode: Boolean; paths: any; strokeColor: String; strokeWidth: Number }> = [];
@@ -247,6 +259,14 @@ function App() {
 		}
 	}
 
+	function undoPath() {
+		refCanvas.current.undo();
+	}
+
+	function redoPath() {
+		refCanvas.current.redo();
+	}
+
 	function openConfirmModal() {
 		setConfirmIsOpen(true);
 	}
@@ -277,23 +297,35 @@ function App() {
 					<i className="fa-regular fa-eraser"></i>
 				</li> */}
 
-				<li onClick={traceImage}>
+				<li onClick={clearCanvas} title="Clear Canvas">
+					<i className="fa-regular fa-arrows-rotate"></i>
+				</li>
+
+				<li onClick={traceImage} title="Draw Mode">
 					<i className="fa-regular fa-scribble"></i>
 				</li>
 
-				<li onClick={clearCanvas}>
+				<li onClick={undoPath} title="Undo">
+					<i className="fa-regular fa-rotate-left"></i>
+				</li>
+
+				<li onClick={redoPath} title="Redo">
 					<i className="fa-regular fa-rotate-right"></i>
 				</li>
 
-				<li onClick={sendDrawing} className={aggressiveMode ? 'disabled' : ''}>
+				<li onClick={sendDrawing} className={aggressiveMode ? 'disabled' : ''} title="Send to Robot">
 					<i className="fa-regular fa-share-from-square"></i>
 				</li>
 
-				<li onClick={openConfirmModal}>
+				<li
+					onClick={backgroundImage && openConfirmModal}
+					className={!backgroundImage ? 'disabled' : ''}
+					title="Save SVG"
+				>
 					<i className="fa-regular fa-floppy-disk"></i>
 				</li>
 
-				<li onClick={openModal}>
+				<li onClick={openModal} title="Settings">
 					<i className="fa-regular fa-gear"></i>
 				</li>
 			</ul>

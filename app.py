@@ -181,16 +181,20 @@ def get_image():
         return sendResponse(type='error', message='No files in directory')
 
 
-@app.route('/move_image/<string:filename>', methods=['POST'])
-def move_image(filename):
-    print(filename)
-    if os.path.exists(slices_dir+'/'+filename):
-        os.rename(slices_dir+'/'+filename,
-                  slices_completed_dir+'/'+filename)
-    if os.path.exists(slices_completed_dir+'/'+filename):
-        return sendResponse(type='success', message='File Moved Successfully.')
+@app.route('/save_image', methods=['POST'])
+def save_image():
+    response = request.get_json()
+    print(response)
+    if os.path.exists(slices_dir+'/'+response['filename']):
+        os.rename(slices_dir+'/'+response['filename'],
+                  slices_completed_dir+'/'+response['filename'])
+        if os.path.exists(slices_completed_dir+'/'+response['filename']):
+            f = open(svgs_dir+'/'+response['filename']+'.svg', "a")
+            f.write(response['svg'])
+            f.close()
+            return sendResponse(type='success', message='File saved Successfully.')
     else:
-        return sendResponse(type='error', message='Error moving file.')
+        return sendResponse(type='error', message='Error moving or file not found.')
 
 
 @app.route('/command/<string:command>', methods=['POST'])

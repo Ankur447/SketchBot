@@ -25,7 +25,7 @@ from worker import conn
 q = Queue(connection=conn)
 
 
-app = Flask(__name__,static_folder='frontend/dist')
+app = Flask(__name__, static_folder='frontend/dist')
 logger = formatLogger(__name__)
 
 CORS(app)
@@ -74,7 +74,7 @@ def connect_arm():
     try:
         arm = Dexarm(port=serial_port)
         x, y, z, e, a, b, c = arm.get_current_position()
-        message = "DexArm connected x: {}, y: {}, z: {}, e: {}\na: {}, b: {}, c: {}".format(
+        message = "OnePlus Arm connected x: {}, y: {}, z: {}, e: {}\na: {}, b: {}, c: {}".format(
             x, y, z, e, a, b, c)
         print(message)
         return message
@@ -91,7 +91,7 @@ def disconnect_arm():
         arm = None
         return "Disconnected"
     else:
-        return "No DexArm connected."
+        return "No OnePlus Arm connected."
 
 
 def plot_gcode(response):
@@ -108,7 +108,7 @@ def plot_gcode(response):
         except:
             logging.error(f'Something went wrong while processing.')
     else:
-        logging.error("No DexArm connected.")
+        logging.error("No OnePlus Arm connected.")
 
 ##########################################################################################
 # API Routes
@@ -118,7 +118,6 @@ def plot_gcode(response):
 # @app.route('/')
 # def index():
 #     return "Server is running."
-
 
 
 @app.route('/', defaults={'path': ''})
@@ -136,13 +135,13 @@ def position():
     connect_arm()
     if arm is not None:
         x, y, z, e, a, b, c = arm.get_current_position()
-        position = {'x': int(x), 'y':int(y), 'z': int(z), 'e':int(z)}
+        position = {'x': int(x), 'y': int(y), 'z': int(z), 'e': int(z)}
         logger.info(f'Sent Position {position}')
         disconnect_arm()
         return position
     else:
-        logger.error(f'No DexArm connected.')
-        return 'No DexArm connected.'
+        logger.error(f'No OnePlus Arm connected.')
+        return 'No OnePlus Arm connected.'
 
 
 @app.route('/move', methods=['POST'])
@@ -153,13 +152,34 @@ def move():
     if arm is not None:
         arm.move_to(x=response['x'], y=response['y'], z=response['z'])
         x, y, z, e, a, b, c = arm.get_current_position()
-        position = {'x': int(x), 'y':int(y), 'z': int(z), 'e':int(z)}
+        position = {'x': int(x), 'y': int(y), 'z': int(z), 'e': int(z)}
         logger.info(f'Sent Position {position}')
         disconnect_arm()
         return position
     else:
-        logger.error(f'No DexArm connected.')
-        return 'No DexArm connected.'
+        logger.error(f'No OnePlus Arm connected.')
+        return 'No OnePlus Arm connected.'
+
+
+@app.route('/get_image', methods=['GET'])
+def get_image():
+    files_list = []
+    for (root, dirs, file) in os.walk('frontend/dist'):
+        for f in file:
+            if '.jpg' in f:
+                files_list.append(f)
+    print(files_list[0])
+    return files_list[0]
+
+
+@app.route('/move_image', methods=['GET'])
+def move_image():
+    files_list = []
+    for (root, dirs, file) in os.walk('frontend/dist'):
+        for f in file:
+            if '.jpg' in f:
+                files_list.append(f)
+    return files_list
 
 
 @app.route('/command/<string:command>', methods=['POST'])
@@ -170,21 +190,21 @@ def command(command):
     if arm is not None:
         if command == "home":
             cmd = 'M1112'
-        elif command == "reset":    
+        elif command == "reset":
             cmd = 'G92.1'
-        elif command == "stop":      
+        elif command == "stop":
             cmd = 'G4'
-        elif command == "setworkheight":      
+        elif command == "setworkheight":
             cmd = 'G92 X0 Y300 Z0 E0'
         elif command == "testworkheight":
-            arm.move_to(x=0, y=300, z=0)      
+            arm.move_to(x=0, y=300, z=0)
         arm._send_cmd(f'{cmd}\r')
         logger.info(f'Sent Command : {cmd}')
         disconnect_arm()
         return '200 OK HTTPS.'
     else:
-        logger.error(f'No DexArm connected.')
-        return 'No DexArm connected.'
+        logger.error(f'No OnePlus Arm connected.')
+        return 'No OnePlus Arm connected.'
 
 
 @app.route('/draw', methods=['POST'])

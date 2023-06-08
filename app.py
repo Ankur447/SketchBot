@@ -25,9 +25,15 @@ from worker import conn
 q = Queue(connection=conn)
 
 
-app = Flask(__name__, static_folder='frontend/dist')
-logger = formatLogger(__name__)
+frontend_dir = 'frontend/dist'
+slices_dir = 'frontend/dist/slices'
+slices_completed_dir = 'frontend/dist/slices_completed'
+svgs_dir = 'frontend/dist/svgs'
+supported_file_formart = '.jpg'
 
+
+app = Flask(__name__, static_folder=frontend_dir)
+logger = formatLogger(__name__)
 CORS(app)
 # cors = CORS(app, resource={
 #     r"/*":{
@@ -67,6 +73,7 @@ svg_gcode = SVG_GCode(
 
 
 ##########################################################################################
+# Helpers
 ##########################################################################################
 
 def connect_arm():
@@ -110,14 +117,14 @@ def plot_gcode(response):
     else:
         logging.error("No OnePlus Arm connected.")
 
+
+def sendResponse(type='info', message='Message'):
+    return {'type': type, 'message': message}
+
+
 ##########################################################################################
 # API Routes
 ##########################################################################################
-
-
-# @app.route('/')
-# def index():
-#     return "Server is running."
 
 
 @app.route('/', defaults={'path': ''})
@@ -138,10 +145,9 @@ def position():
         position = {'x': int(x), 'y': int(y), 'z': int(z), 'e': int(z)}
         logger.info(f'Sent Position {position}')
         disconnect_arm()
-        return position
+        return sendResponse(type='success', message=position)
     else:
-        logger.error(f'No OnePlus Arm connected.')
-        return 'No OnePlus Arm connected.'
+        return sendResponse(type='error', message='Oneplus Arm not detected.')
 
 
 @app.route('/move', methods=['POST'])
@@ -155,31 +161,36 @@ def move():
         position = {'x': int(x), 'y': int(y), 'z': int(z), 'e': int(z)}
         logger.info(f'Sent Position {position}')
         disconnect_arm()
-        return position
+        return sendResponse(type='success', message=position)
     else:
-        logger.error(f'No OnePlus Arm connected.')
-        return 'No OnePlus Arm connected.'
+        return sendResponse(type='error', message='Oneplus Arm not detected.')
 
 
 @app.route('/get_image', methods=['GET'])
 def get_image():
     files_list = []
-    for (root, dirs, file) in os.walk('frontend/dist'):
+    for (root, dirs, file) in os.walk(slices_dir):
         for f in file:
             if '.jpg' in f:
                 files_list.append(f)
-    print(files_list[0])
-    return files_list[0]
+
+    if (len(files_list) > 0):
+        print(files_list[0])
+        return sendResponse(type='success', message=files_list[0])
+    else:
+        return sendResponse(type='error', message='No files in directory')
 
 
-@app.route('/move_image', methods=['GET'])
-def move_image():
-    files_list = []
-    for (root, dirs, file) in os.walk('frontend/dist'):
-        for f in file:
-            if '.jpg' in f:
-                files_list.append(f)
-    return files_list
+@app.route('/move_image/<string:filename>', methods=['POST'])
+def move_image(filename):
+    print(filename)
+    if os.path.exists(slices_dir+'/'+filename):
+        os.rename(slices_dir+'/'+filename,
+                  slices_completed_dir+'/'+filename)
+    if os.path.exists(slices_completed_dir+'/'+filename):
+        return sendResponse(type='success', message='File Moved Successfully.')
+    else:
+        return sendResponse(type='error', message='Error moving file.')
 
 
 @app.route('/command/<string:command>', methods=['POST'])
@@ -201,10 +212,9 @@ def command(command):
         arm._send_cmd(f'{cmd}\r')
         logger.info(f'Sent Command : {cmd}')
         disconnect_arm()
-        return '200 OK HTTPS.'
+        return sendResponse(type='success', message='Command sent successfully.')
     else:
-        logger.error(f'No OnePlus Arm connected.')
-        return 'No OnePlus Arm connected.'
+        return sendResponse(type='error', message='Oneplus Arm not detected.')
 
 
 @app.route('/draw', methods=['POST'])
@@ -215,7 +225,7 @@ def draw():
         job = q.enqueue(plot_gcode, response, result_ttl=2)
         logger.info(f'{response}')
         logger.info(f'Started job with ID {job.get_id()}')
-    return '200 OK HTTPS.'
+    return sendResponse(type='success', message='Path draw successfully.')
 
 
 if __name__ == "__main__":

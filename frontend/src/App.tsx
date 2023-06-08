@@ -30,9 +30,7 @@ function App() {
 	const [modalIsOpen, setIsOpen] = useState(false);
 	const [confirmIsOpen, setConfirmIsOpen] = useState(false);
 
-	const [backgroundImage, setBackgroundImage] = useState(
-		'https://upload.wikimedia.org/wikipedia/commons/7/70/Graph_paper_scan_1600x1000_%286509259561%29.jpg'
-	);
+	const [backgroundImage, setBackgroundImage] = useState();
 
 	const customStyles = {
 		content: {
@@ -65,22 +63,14 @@ function App() {
 		await api
 			.get('/position')
 			.then((response: any) => {
-				setCurrentPosition({ ...response.data });
-
-				response.data.x
-					? toast.info(`Current Position X ${response.data.x} Y ${response.data.y} Z ${response.data.z}`, {
-							icon: () => <i className="fa-regular fa-circle-check"></i>,
-					  })
-					: toast.info(`${response.data}`, {
-							icon: () => <i className="fa-regular fa-circle-check"></i>,
-					  });
-
+				response.data.message.x ? setCurrentPosition({ ...response.data.message }) : null;
+				response.data.message.x
+					? showToast('info', `Current Position X ${response.data.x} Y ${response.data.y} Z ${response.data.z}`)
+					: showToast('info', response.data.message);
 				console.log(response);
 			})
 			.catch((error: any) => {
-				toast.error(`${error.toJSON().message}`, {
-					icon: () => <i className="fa-regular fa-circle-exclamation"></i>,
-				});
+				showToast('error', error.toJSON().message);
 			});
 	};
 
@@ -92,9 +82,7 @@ function App() {
 				console.log(response);
 			})
 			.catch((error: any) => {
-				toast.error(`${error.toJSON().message}`, {
-					icon: () => <i className="fa-regular fa-circle-exclamation"></i>,
-				});
+				showToast('error', error.toJSON().message);
 			});
 	};
 
@@ -113,9 +101,7 @@ function App() {
 				console.log(response.data);
 			})
 			.catch((error: any) => {
-				toast.error(`${error.toJSON().message}`, {
-					icon: () => <i className="fa-regular fa-circle-exclamation"></i>,
-				});
+				showToast('error', error.toJSON().message);
 			});
 	};
 
@@ -123,35 +109,48 @@ function App() {
 		await api
 			.post(`/command/${command}`)
 			.then((response: any) => {
-				toast.success(`${response.data}`, {
-					icon: () => <i className="fa-regular fa-circle-check"></i>,
-				});
-
-				// console.log(response.data);
+				showToast(response.data.type, response.data.message);
 				getPosition();
 			})
 			.catch((error: any) => {
-				toast.error(`${error.toJSON().message}`, {
-					icon: () => <i className="fa-regular fa-circle-exclamation"></i>,
-				});
+				showToast('error', error.toJSON().message);
 			});
 	};
 
 	const getImageFile = async () => {
+		clearCanvas();
 		await api
 			.get('/get_image')
 			.then((response: any) => {
-				toast.success(`${response.data}`, {
-					icon: () => <i className="fa-regular fa-circle-check"></i>,
-				});
-				setBackgroundImage(`${response.data}`);
+				if (response.data.type == 'success') {
+					showToast('success', response.data.message);
+					setBackgroundImage(response.data.message);
+				} else {
+					showToast(response.data.type, response.data.message);
+				}
 				console.log(response);
 			})
 			.catch((error: any) => {
-				toast.error(`${error.toJSON().message}`, {
-					icon: () => <i className="fa-regular fa-circle-exclamation"></i>,
-				});
+				showToast('error', error.toJSON().message);
 			});
+	};
+
+	const saveDrawing = async () => {
+		refCanvas.current.exportSvg().then((response: any) => {
+			console.log(response);
+		});
+
+		if (backgroundImage) {
+			await api
+				.post(`/move_image/${backgroundImage}`)
+				.then((response: any) => {
+					showToast(response.data.type, response.data.message);
+					getImageFile();
+				})
+				.catch((error: any) => {
+					showToast('error', error.toJSON().message);
+				});
+		}
 	};
 
 	useEffect(() => {
@@ -226,11 +225,27 @@ function App() {
 		}
 	};
 
-	const saveDrawing = () => {
-		refCanvas.current.exportSvg().then((response: any) => {
-			console.log(response);
-		});
-	};
+	function showToast(type: string, message: string) {
+		switch (type) {
+			case 'success':
+				toast.success(message, {
+					icon: () => <i className="fa-regular fa-circle-check"></i>,
+				});
+				return;
+
+			case 'error':
+				toast.error(message, {
+					icon: () => <i className="fa-regular fa-circle-exclamation"></i>,
+				});
+				return;
+
+			default:
+				toast.info(message, {
+					icon: () => <i className="fa-regular fa-circle-info"></i>,
+				});
+				return;
+		}
+	}
 
 	function openConfirmModal() {
 		setConfirmIsOpen(true);
@@ -283,12 +298,7 @@ function App() {
 				</li>
 			</ul>
 
-			<Modal
-				isOpen={modalIsOpen}
-				onRequestClose={closeModal}
-				style={customStyles}
-				// className="modal-settings"
-			>
+			<Modal isOpen={modalIsOpen} onRequestClose={closeModal} style={customStyles}>
 				<div className="modal-header">
 					<h2>Settings</h2>
 
@@ -330,12 +340,7 @@ function App() {
 				</div>
 			</Modal>
 
-			<Modal
-				isOpen={confirmIsOpen}
-				onRequestClose={closeModal}
-				style={customStyles_confirm}
-				// className="modal-settings"
-			>
+			<Modal isOpen={confirmIsOpen} onRequestClose={closeModal} style={customStyles_confirm}>
 				<div className="modal-header">
 					<h2>Confirm Save</h2>
 
@@ -365,13 +370,17 @@ function App() {
 				strokeColor="black"
 				className="canvas"
 				eraserWidth={10}
-				backgroundImage={backgroundImage}
+				backgroundImage={
+					backgroundImage
+						? '/slices/' + backgroundImage
+						: 'https://upload.wikimedia.org/wikipedia/commons/7/70/Graph_paper_scan_1600x1000_%286509259561%29.jpg'
+				}
 				preserveBackgroundImageAspectRatio="preserveAspectRatio"
 				onStroke={onStroke}
 				onChange={onChange}
 				ref={refCanvas}
 			/>
-			{backgroundImage ? backgroundImage : 'No Image'}
+			{backgroundImage ? backgroundImage : null}
 
 			<ToastContainer
 				position="bottom-right"

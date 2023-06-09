@@ -6,7 +6,7 @@ import Modal from 'react-modal';
 import axios from 'axios';
 
 const api = axios.create({
-	baseURL: 'http://localhost:5000',
+	baseURL: 'http://oneplusarm.local:5000',
 	headers: {
 		'Content-Type': 'application/json',
 		'Access-Control-Allow-Origin': '*',
@@ -110,10 +110,16 @@ function App() {
 		await api
 			.get('/position')
 			.then((response: any) => {
-				response.data.message.x ? setCurrentPosition({ ...response.data.message }) : null;
-				response.data.message.x
-					? showToast('info', `Current Position X ${response.data.x} Y ${response.data.y} Z ${response.data.z}`)
-					: showToast('info', response.data.message);
+				if (response.data.type == 'success') {
+					setCurrentPosition({ ...response.data.message });
+					showToast(
+						'info',
+						`Current Position X ${response.data.message.x} Y ${response.data.message.y} Z ${response.data.message.z}`
+					);
+				} else {
+					showToast('info', response.data.message);
+				}
+
 				console.log(response);
 			})
 			.catch((error: any) => {

@@ -266,11 +266,15 @@ function App() {
 	}
 
 	function undoPath() {
-		refCanvas.current.undo();
+		if (!aggressiveMode) {
+			refCanvas.current.undo();
+		}
 	}
 
 	function redoPath() {
-		refCanvas.current.redo();
+		if (!aggressiveMode) {
+			refCanvas.current.redo();
+		}
 	}
 
 	function openConfirmModal() {
@@ -311,11 +315,11 @@ function App() {
 					<i className="fa-regular fa-scribble"></i>
 				</li>
 
-				<li onClick={undoPath} title="Undo">
+				<li onClick={undoPath} title="Undo" className={aggressiveMode ? 'disabled' : ''}>
 					<i className="fa-regular fa-rotate-left"></i>
 				</li>
 
-				<li onClick={redoPath} title="Redo">
+				<li onClick={redoPath} title="Redo" className={aggressiveMode ? 'disabled' : ''}>
 					<i className="fa-regular fa-rotate-right"></i>
 				</li>
 

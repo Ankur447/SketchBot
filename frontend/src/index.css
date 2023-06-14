@@ -212,3 +212,40 @@ image {
 .Toastify__toast-body svg {
 	color: #f50514 !important;
 }
+
+.filename-display {
+	color: #fff;
+	background-color: #000;
+	padding: 5px 10px;
+	font-size: 14px;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	border-bottom-right-radius: 5px;
+}
+.number-wrapper {
+	display: flex;
+}
+.number-wrapper input {
+	border-radius: 0px !important;
+	border: 1px solid #ccc !important;
+	text-align: center;
+}
+.step-button {
+	border: transparent !important;
+	background-color: #242424;
+	color: #fff;
+}
+.step-button:hover {
+	background-color: #222;
+}
+
+.step-button:first-child {
+	border-top-right-radius: 0px;
+	border-bottom-right-radius: 0px;
+}
+
+.step-button:last-child {
+	border-top-left-radius: 0px;
+	border-bottom-left-radius: 0px;
+}

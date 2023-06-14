@@ -4,14 +4,15 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Modal from 'react-modal';
 import axios from 'axios';
+import NumberInput from './components/NumberInput';
 
 const api = axios.create({
-	baseURL: 'http://localhost:5000',
+	// baseURL: '',
 	headers: {
 		'Content-Type': 'application/json',
-		'Access-Control-Allow-Origin': '*',
-		'Access-Control-Allow-Credentials': true,
-		'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
+		// 'Access-Control-Allow-Origin': '*',
+		// 'Access-Control-Allow-Credentials': true,
+		// 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
 	},
 	params: {},
 });
@@ -361,20 +362,13 @@ function App() {
 					</div>
 
 					<div className="form-container m-t">
-						<div className="form-group m-r">
-							<label>X</label>
-							<input type="number" name="x" value={currentPosition.x} onChange={onChangePosition} step={1} min={-70} />
+						<div className="m-r">
+							<NumberInput label="x" value={currentPosition.x} onChange={onChangePosition} />
 						</div>
-
-						<div className="form-group m-r">
-							<label>Y</label>
-							<input type="number" name="y" value={currentPosition.y} onChange={onChangePosition} step={1} min={-70} />
+						<div className="m-r">
+							<NumberInput label="y" value={currentPosition.y} onChange={onChangePosition} />
 						</div>
-
-						<div className="form-group">
-							<label>Z</label>
-							<input type="number" name="z" value={currentPosition.z} onChange={onChangePosition} step={1} min={-70} />
-						</div>
+						<NumberInput label="z" value={currentPosition.z} onChange={onChangePosition} />
 					</div>
 					<div className="form-container m-t">
 						<button onClick={setworkheight} className="m-r">
@@ -425,7 +419,7 @@ function App() {
 				onChange={onChange}
 				ref={refCanvas}
 			/>
-			{backgroundImage ? backgroundImage : null}
+			<div className="filename-display">{backgroundImage ? backgroundImage : 'No file'}</div>
 
 			<ToastContainer
 				position="bottom-right"

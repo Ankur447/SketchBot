@@ -6,7 +6,7 @@ import Modal from 'react-modal';
 import axios from 'axios';
 
 const api = axios.create({
-	baseURL: 'https://sketchbot1-oneplusroadtrip.in.ngrok.io',
+	baseURL: 'http://localhost:5000',
 	headers: {
 		'Content-Type': 'application/json',
 		'Access-Control-Allow-Origin': '*',
@@ -222,17 +222,6 @@ function App() {
 			});
 		}
 	};
-
-	// function enterFullScreen() {
-	// 	const elem = document.documentElement;
-	// 	if (elem.requestFullscreen) {
-	// 		elem.requestFullscreen();
-	// 	} else if (elem.webkitRequestFullscreen) {
-	// 		elem.webkitRequestFullscreen();
-	// 	} else if (elem.msRequestFullscreen) {
-	// 		elem.msRequestFullscreen();
-	// 	}
-	// }
 
 	useEffect(() => {
 		getImageFile();

@@ -1,13 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type NumberInputProps = {
 	label: string;
-	onChange: any;
+	onChangeCallback: any;
 	value: number;
 };
 
-const NumberInput = ({ label, onChange, value }: NumberInputProps) => {
+const NumberInput = ({ label, onChangeCallback, value }: NumberInputProps) => {
 	const [number, setNumber] = useState(value ? value : 0);
+
+	const handleChange = (e: any) => {
+		setNumber(parseInt(e.target.value));
+		onChangeCallback({ name: e.target.name, value: e.target.value });
+		console.log(e.target.value);
+	};
 
 	const countUp = () => {
 		setNumber(number + 1);
@@ -17,6 +23,10 @@ const NumberInput = ({ label, onChange, value }: NumberInputProps) => {
 		setNumber(number - 1);
 	};
 
+	useEffect(() => {
+		onChangeCallback({ name: label, value: number });
+	}, [number]);
+
 	return (
 		<div className="form-group">
 			<label>{label}</label>
@@ -25,7 +35,7 @@ const NumberInput = ({ label, onChange, value }: NumberInputProps) => {
 				<button className="step-button" onClick={countDown}>
 					-
 				</button>
-				<input type="number" name={label} value={number} onChange={onChange} step={1} min={-70} />
+				<input type="number" name={label} value={number} onChange={handleChange} />
 				<button className="step-button" onClick={countUp}>
 					+
 				</button>

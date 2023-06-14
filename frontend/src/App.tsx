@@ -143,7 +143,8 @@ function App() {
 	};
 
 	const onChangePosition = (event: any) => {
-		const position = { ...currentPosition, [event.target.name]: parseInt(event.target.value) };
+		console.log(event);
+		const position = { ...currentPosition, [event.name]: parseInt(event.value) };
 		sendPosition(position);
 		console.log(currentPosition);
 		setCurrentPosition({ ...position });
@@ -363,12 +364,12 @@ function App() {
 
 					<div className="form-container m-t">
 						<div className="m-r">
-							<NumberInput label="x" value={currentPosition.x} onChange={onChangePosition} />
+							<NumberInput label="x" value={currentPosition.x} onChangeCallback={onChangePosition} />
 						</div>
 						<div className="m-r">
-							<NumberInput label="y" value={currentPosition.y} onChange={onChangePosition} />
+							<NumberInput label="y" value={currentPosition.y} onChangeCallback={onChangePosition} />
 						</div>
-						<NumberInput label="z" value={currentPosition.z} onChange={onChangePosition} />
+						<NumberInput label="z" value={currentPosition.z} onChangeCallback={onChangePosition} />
 					</div>
 					<div className="form-container m-t">
 						<button onClick={setworkheight} className="m-r">
@@ -403,7 +404,7 @@ function App() {
 			</Modal>
 
 			<ReactSketchCanvas
-				width="1024px"
+				width="880px"
 				height="620px"
 				strokeWidth={4}
 				strokeColor="black"

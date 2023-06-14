@@ -21,9 +21,12 @@ import time
 
 from rq import Queue
 from rq.job import Job
+from rq.registry import StartedJobRegistry
+
 from worker import conn
 q = Queue(connection=conn)
-
+registry = StartedJobRegistry(queue=q)
+# registry = StartedJobRegistry('default', connection=conn)
 
 frontend_dir = 'frontend/dist'
 slices_dir = 'frontend/dist/slices'
@@ -65,10 +68,10 @@ svg_gcode = SVG_GCode(
     x_offset=-115,
     y_offset=230,
     z_surface_touch=0,
-    z_up_offset=5,
-    bed_size_x=230,
-    bed_size_y=150,
-    longest_edge=230,
+    z_up_offset=10,
+    bed_size_x=220,
+    bed_size_y=140,
+    longest_edge=220,
     canvas_width=733,
     canvas_height=668,
     verbose=True,
@@ -178,6 +181,7 @@ def get_image():
                 files_list.append(f)
 
     if (len(files_list) > 0):
+        files_list.sort()
         print(files_list[0])
         return sendResponse(type='success', message=files_list[0])
     else:
@@ -200,6 +204,16 @@ def save_image():
         return sendResponse(type='error', message='Error moving or file not found.')
 
 
+
+def clear_jobs():
+    total_jobs = registry.get_queue().job_ids
+    print('Number of jobs in registry %s' % len(total_jobs))
+    for job_id in total_jobs:
+        print(job_id)
+        registry.remove(job_id, delete_job=True)
+    return sendResponse(type='success', message='Cleared draws')
+
+
 @app.route('/command/<string:command>', methods=['POST'])
 def command(command):
     connect_arm()
@@ -216,6 +230,7 @@ def command(command):
             cmd = 'G92 X0 Y300 Z0 E0'
         elif command == "testworkheight":
             arm.move_to(x=0, y=300, z=0)
+        clear_jobs()    
         arm._send_cmd(f'{cmd}\r')
         logger.info(f'Sent Command : {cmd}')
         disconnect_arm()
@@ -229,7 +244,7 @@ def draw():
     response = request.get_json()
     from app import plot_gcode
     if len(response[0]['paths']) > 1:
-        job = q.enqueue(plot_gcode, response, result_ttl=2)
+        job = q.enqueue(plot_gcode, response, result_ttl=10000)
         logger.info(f'{response}')
         logger.info(f'Started job with ID {job.get_id()}')
     return sendResponse(type='success', message='Path draw successfully.')

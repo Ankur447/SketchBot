@@ -53,6 +53,9 @@ debug = False
 # Dex Arm Configuration
 ##########################################################################################
 
+# Run command to get available ports after activating virtual env
+# python -m serial.tools.miniterm
+
 arm = None
 # serial_port = "/dev/tty.usbmodem305A366030311"
 serial_port = "/dev/ttyACM0"

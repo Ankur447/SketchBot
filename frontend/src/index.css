@@ -12,6 +12,10 @@
 	-webkit-text-size-adjust: 100%;
 }
 
+body {
+	background-color: #ffffff;
+}
+
 html,
 body,
 .container,
@@ -29,7 +33,7 @@ svg {
 .canvas {
 	border: 1px solid #efefef !important;
 	margin: 20px;
-	margin-left: 100px;
+	margin-left: 80px;
 }
 
 #root {

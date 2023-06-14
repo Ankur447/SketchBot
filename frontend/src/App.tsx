@@ -6,7 +6,7 @@ import Modal from 'react-modal';
 import axios from 'axios';
 
 const api = axios.create({
-	baseURL: 'http://oneplusarm.local:5000',
+	baseURL: 'https://sketchbot1-oneplusroadtrip.in.ngrok.io',
 	headers: {
 		'Content-Type': 'application/json',
 		'Access-Control-Allow-Origin': '*',
@@ -82,6 +82,8 @@ function App() {
 		refCanvas.current.resetCanvas();
 		sendCommand('home');
 		setPaths([]);
+		document.body.requestFullscreen();
+		// handle.enter().then(() => {});
 	};
 
 	const sendHome = () => {
@@ -182,6 +184,7 @@ function App() {
 						showToast(response.data.type, response.data.message);
 						setBackgroundImage(undefined);
 					}
+
 					console.log(response);
 				})
 				.catch((error: any) => {
@@ -219,6 +222,17 @@ function App() {
 			});
 		}
 	};
+
+	// function enterFullScreen() {
+	// 	const elem = document.documentElement;
+	// 	if (elem.requestFullscreen) {
+	// 		elem.requestFullscreen();
+	// 	} else if (elem.webkitRequestFullscreen) {
+	// 		elem.webkitRequestFullscreen();
+	// 	} else if (elem.msRequestFullscreen) {
+	// 		elem.msRequestFullscreen();
+	// 	}
+	// }
 
 	useEffect(() => {
 		getImageFile();
@@ -407,7 +421,7 @@ function App() {
 
 			<ReactSketchCanvas
 				width="1024px"
-				height="661px"
+				height="620px"
 				strokeWidth={4}
 				strokeColor="black"
 				className="canvas"

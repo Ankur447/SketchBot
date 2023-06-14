@@ -178,6 +178,7 @@ def get_image():
                 files_list.append(f)
 
     if (len(files_list) > 0):
+        files_list.sort()
         print(files_list[0])
         return sendResponse(type='success', message=files_list[0])
     else:

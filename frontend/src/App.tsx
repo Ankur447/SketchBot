@@ -138,6 +138,7 @@ function App() {
 				console.log(response);
 			})
 			.catch((error: any) => {
+				console.log(error.toJSON().message);
 				// showToast('error', error.toJSON().message);
 			});
 	};

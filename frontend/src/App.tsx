@@ -22,6 +22,8 @@ Modal.setAppElement('#root');
 function App() {
 	const refCanvas = createRef<any>();
 	const [aggressiveMode, setAggresiveMode] = useState(true);
+	const [loading, setLoading] = useState(false);
+
 	// const [aggressiveMode] = useState(true);
 	const [eraserMode, setEraserMode] = useState(false);
 	const [paths, setPaths] = useState<
@@ -42,6 +44,7 @@ function App() {
 			transform: 'translate(-50%, -50%)',
 			boxShadow: '0px 0px 16px -4px rgba(0, 0, 0, 0.31)',
 			border: 'None',
+			maxWidth: '600px',
 		},
 	};
 
@@ -131,13 +134,16 @@ function App() {
 	};
 
 	const sendPosition = async (currentPosition: any) => {
+		setLoading(true);
 		await api
 			.post('/move', currentPosition)
 			.then((response: any) => {
+				setLoading(false);
 				// setCurrentPosition({ ...response.data });
 				console.log(response);
 			})
 			.catch((error: any) => {
+				setLoading(false);
 				console.log(error.toJSON().message);
 				// showToast('error', error.toJSON().message);
 			});
@@ -164,13 +170,16 @@ function App() {
 	};
 
 	const sendCommand = async (command: String) => {
+		setLoading(true);
 		await api
 			.post(`/command/${command}`)
 			.then((response: any) => {
+				setLoading(false);
 				showToast(response.data.type, response.data.message);
 				getPosition();
 			})
 			.catch((error: any) => {
+				setLoading(false);
 				showToast('error', error.toJSON().message);
 			});
 	};
@@ -356,6 +365,10 @@ function App() {
 				</div>
 
 				<div className="settings-tab">
+					<div className="overlay-loading" style={{ display: loading ? 'inline-block' : 'none' }}>
+						<div>Please wait...</div>
+					</div>
+
 					<div className="form-container">
 						<button onClick={sendHome} className="m-r">
 							Home
@@ -370,7 +383,9 @@ function App() {
 						<div className="m-r">
 							<NumberInput label="y" value={currentPosition.y} onChangeCallback={onChangePosition} />
 						</div>
-						<NumberInput label="z" value={currentPosition.z} onChangeCallback={onChangePosition} />
+						<div className="m-r">
+							<NumberInput label="z" value={currentPosition.z} onChangeCallback={onChangePosition} />
+						</div>
 					</div>
 					<div className="form-container m-t">
 						<button onClick={setworkheight} className="m-r">

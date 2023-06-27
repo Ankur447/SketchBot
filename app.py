@@ -199,10 +199,37 @@ def save_image():
             f = open(svgs_dir+'/'+response['filename']+'.svg', "a")
             f.write(response['svg'])
             f.close()
-            return sendResponse(type='success', message='File saved Successfully.')
+            if os.path.exists(svgs_dir+'/'+response['filename']+'.svg'):
+                svg_file = open(svgs_dir+'/'+response['filename']+'.svg', "rb")
+                svg_post_url = "http://localhost:8888/robotic-arm-upload-api/api.php"
+                upload_response = requests.post(
+                    svg_post_url, files={"uploaded_svg": svg_file}, data={'sketchbot': 2})
+                if upload_response.ok:
+                    # print(upload_response.text)
+                    return sendResponse(type='success', message=upload_response.text)
+                else:
+                    return sendResponse(type='error', message='Problem uploading file.')
+            else:
+                return sendResponse(type='error', message='Upload File not found.')
     else:
         return sendResponse(type='error', message='Error moving or file not found.')
 
+
+# @app.route('/upload_image', methods=['POST'])
+# def upload_image():
+#     response = {'filename': 'Image_a01.jpg.svg'}
+#     if os.path.exists(svgs_dir+'/'+response['filename']):
+#         svg_file = open(svgs_dir+'/'+response['filename'], "rb")
+#         svg_post_url = "http://localhost:8888/robotic-arm-upload-api/api.php"
+#         upload_response = requests.post(
+#             svg_post_url, files={"uploaded_svg": svg_file}, data={'sketchbot': 2})
+#         if upload_response.ok:
+#             # print(upload_response.text)
+#             return sendResponse(type='success', message=upload_response.text)
+#         else:
+#             return sendResponse(type='error', message='Problem uploading file.')
+#     else:
+#         return sendResponse(type='error', message='File not found.')
 
 
 def clear_jobs():
@@ -230,7 +257,7 @@ def command(command):
             cmd = 'G92 X0 Y300 Z0 E0'
         elif command == "testworkheight":
             arm.move_to(x=0, y=300, z=0)
-        clear_jobs()    
+        clear_jobs()
         arm._send_cmd(f'{cmd}\r')
         logger.info(f'Sent Command : {cmd}')
         disconnect_arm()

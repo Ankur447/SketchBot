@@ -61,66 +61,83 @@ def path_to_cordinate_chomper(shape_path, PRECISION=5, verbose=False):
         prev = dxdy
 
 
-#adding print to debug
-def svg_to_coordinate_chomper(inp, PRECISION=10, verbose=False):
-    print(f"Debug: Starting svg_to_coordinate_chomper with PRECISION={PRECISION}, verbose={verbose}")
-    current_pos = [0, 0]
-    for command in inp:
-        cmd = command[0]
-        #print(f"Debug: Processing command: {command}")
-        if cmd == 'M':  # Move to absolute
-            current_pos = [float(command[1]), float(command[2])]
-            #print(f"Debug: Move to {current_pos}")
-            yield 'UP'
-            yield current_pos
-            yield 'DOWN'
-        elif cmd == 'L':  # Line to absolute
-            for i in range(1, len(command), 2):
-                x = float(command[i])
-                y = float(command[i + 1])
-                current_pos = [x, y]
-                #print`(f"Debug: Line to {current_pos}")
-                yield current_pos
-        elif cmd == 'H':  # Horizontal line to absolute
-            for i in range(1, len(command)):
-                x = float(command[i])
-                current_pos[0] = x
-                #print(f"Debug: Horizontal line to {current_pos}")
-                yield current_pos
-        elif cmd == 'V':  # Vertical line to absolute
-            for i in range(1, len(command)):
-                y = float(command[i])
-                current_pos[1] = y
-                #print(f"Debug: Vertical line to {current_pos}")
-                yield current_pos
-        elif cmd == 'Z':  # Close path
-            #print("Debug: Close path")
-            yield 'Z'
-        elif cmd == 'c':  # Relative cubic Bézier curve
-            for i in range(1, len(command), 6):
-                x1 = current_pos[0] + float(command[i])
-                y1 = current_pos[1] + float(command[i + 1])
-                x2 = current_pos[0] + float(command[i + 2])
-                y2 = current_pos[1] + float(command[i + 3])
-                x = current_pos[0] + float(command[i + 4])
-                y = current_pos[1] + float(command[i + 5])
-                current_pos = [x, y]
-                #print(f"Debug: Relative cubic Bézier to {current_pos} with control points {[(x1, y1), (x2, y2)]}")
-                yield current_pos
-        elif cmd == 'C':  # Absolute cubic Bézier curve
-            for i in range(1, len(command), 6):
-                x1 = float(command[i])
-                y1 = float(command[i + 1])
-                x2 = float(command[i + 2])
-                y2 = float(command[i + 3])
-                x = float(command[i + 4])
-                y = float(command[i + 5])
-                current_pos = [x, y]
-                #print(f"Debug: Absolute cubic Bézier to {current_pos} with control points {[(x1, y1), (x2, y2)]}")
-                yield current_pos
-        else:
-            raise ValueError(f'Unknown command {command[0]}')
-        
+def svg_to_coordinate_chomper(inp, yield_control=False, PRECISION=5, verbose=False):
+    prev = None
+    command_re = re.compile(r'([a-zA-Z])|([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)')
+
+    try:
+        while True:
+            chunk = next(inp)
+            matches = command_re.findall(chunk)
+            for match in matches:
+                command = match[0] if match[0] else match[1]
+                if command in 'MmLlHhVvCcSsQqTtAaZz':
+                    if command == 'M':
+                        start = parse_coord(inp)
+                        prev = start
+                        yield [np.nan, np.nan], 'M'
+                        yield list(start), 'M'
+                        continue
+                    elif command == 'm':
+                        if prev is None:
+                            start = parse_coord(inp)
+                        else:
+                            start = parse_coord(inp) + prev
+                        prev = start
+                        yield [np.nan, np.nan], 'm'
+                        yield list(start), 'm'
+                        continue
+                    elif command in 'zZ':
+                        prev = start
+                        yield start, 'z'
+                        continue
+                    elif command == 'l':
+                        yield prev, 'l'
+                        cur = parse_coord(inp) + prev
+                        yield cur, 'l'
+                        prev = cur
+                        continue
+                    elif command == 'L':
+                        yield prev, 'L'
+                        cur = parse_coord(inp)
+                        yield cur, 'L'
+                        prev = cur
+                        continue
+                    elif command == 'H':
+                        yield list(prev), 'H'
+                        chunk2 = next(inp)
+                        x = float(chunk2)
+                        prev[0] = x
+                        yield list(prev), 'H'
+                    elif command == 'h':
+                        yield list(prev), 'h'
+                        chunk2 = next(inp)
+                        x = float(chunk2)
+                        prev[0] += x
+                        yield list(prev), 'h'
+                    elif command == 'v':
+                        yield list(prev), 'v'
+                        chunk2 = next(inp)
+                        y = float(chunk2)
+                        prev[1] += y
+                        yield list(prev), 'v'
+                    elif command == 'V':
+                        yield list(prev), 'V'
+                        chunk2 = next(inp)
+                        y = float(chunk2)
+                        prev[1] = y
+                        yield list(prev), 'V'
+                    else:
+                        print(f'Unknown command: {command}')
+                        raise ValueError(f'Unknown command {command}')
+                else:
+                    if command not in 'MmLlHhVvCcSsQqTtAaZz':
+                        print(f'Unexpected argument: {command}')
+                        raise ValueError(f'Unexpected argument {command}')
+                    yield prev, command
+    except StopIteration:
+        pass
+    
 # def svg_to_coordinate_chomper(inp, yield_control=False, PRECISION=5, verbose=False):
 #     prev = None
 #     print(inp)
@@ -130,7 +147,7 @@ def svg_to_coordinate_chomper(inp, PRECISION=10, verbose=False):
 
 #             if chunk == 'M':
 #                 print('Got new start coordinate')
-#                 start = `parse`_coord(inp)
+#                 start = parse_coord(inp)
 #                 prev = start
 #                 yield [np.nan, np.nan], 'M'
 #                 yield list(start), 'M'
@@ -397,7 +414,7 @@ def svg_to_segment_blocks(svg_path, precision=5):
         coordinates = []
 
         for (x, y), c in svg_to_coordinate_chomper(inp=repart(parts), PRECISION=precision):
-            #print(x)
+            print(x)
 
             coordinates.append([x, y])
 
